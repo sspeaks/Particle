@@ -31,7 +31,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
     Paint mPaint;
     Paint mAlphaPaint;
     boolean recalculateTextSize = true;
-    String mText = "Katja";
+    String mText = "Seth";
     boolean doArrive = true;
     boolean doText = true;
 
@@ -150,7 +150,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
         mPaint.getTextPath(displayString, 0, displayString.length(), 0 + xOff, 0 + yOff, path);
         PathMeasure pathMeasure = new PathMeasure(path, false);
         float pLength = pathMeasure.getLength();
-        float dDist = 15;
+        float dDist = 10;
         float distanceTraveled = 0;
         boolean nextCountour = true;
         while (distanceTraveled < pLength && nextCountour) {
@@ -411,7 +411,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
                 gridForces();
             }
             update();
-            c.drawPoint(xCurPos, yCurPos, mPaint);
+            c.drawCircle(xCurPos, yCurPos, 10, mPaint);
         }
 
         public void arrive() {
