@@ -31,7 +31,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
     Paint mPaint;
     Paint mAlphaPaint;
     boolean recalculateTextSize = true;
-    String mText = "Seth";
+    String mText = "61°F";
     boolean doArrive = true;
     boolean doText = true;
 
@@ -58,6 +58,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
     int cellWidth;
     int cellHeight;
     float[][] angles;
+    float paintAngleOffset = 0;
 
 
     //region Constructors
@@ -111,9 +112,8 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
         //Instantiate the offsets for x and y coordinates for use with x
         mWidth = width;
         mHeight = height;
-        translate(width / 2, height / 2);
         mPaint = new Paint();
-        mPaint.setTextAlign(Paint.Align.CENTER);
+        //mPaint.setTextAlign(Paint.Align.CENTER);
         mPaint.setStrokeWidth(10);
         mPaint.setColor(Color.WHITE);
         recalculateTextSize = true;
@@ -142,12 +142,12 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
 
     //region Dot Word Functions
 
-    public void calculateWord(String s, Canvas c) {
-        mRay.clear();
+    public ArrayList<Point> calculateWord(String s, Canvas c, Rect r) {
+        ArrayList<Point> cRay = new ArrayList<>();
         String displayString = s;
-        mPaint.setTextSize(calculateFontSize(new Rect(), c.getClipBounds(), displayString, mPaint));
+        mPaint.setTextSize(calculateFontSize(new Rect(), r, displayString, mPaint));
         Path path = new Path();
-        mPaint.getTextPath(displayString, 0, displayString.length(), 0 + xOff, 0 + yOff, path);
+        mPaint.getTextPath(displayString, 0, displayString.length(), r.left, r.bottom, path);
         PathMeasure pathMeasure = new PathMeasure(path, false);
         float pLength = pathMeasure.getLength();
         float dDist = 10;
@@ -160,7 +160,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
             float xPos = map((float) Math.random(), 0, 1, 50, mWidth -50);
             float yPos = map((float) Math.random(), 0, 1, 50, mHeight -50);
             poi.setPosition(xPos, (yPos));
-            mRay.add(poi);
+            cRay.add(poi);
 
             distanceTraveled += dDist;
 
@@ -171,6 +171,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
                 }
             }
         }
+        return cRay;
     }
     private static float calculateFontSize(Rect textBounds, Rect textContainer, String text, Paint textPaint) {
 
@@ -243,15 +244,20 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
         if (c != null) {
             c.drawPaint(mAlphaPaint);
 
-            if(doGrid)
-            {
+//            if(doGrid)
+//            {
                 calculateGrid(c);
-            }
+                paintAngleOffset += .3;
+                paintAngleOffset = paintAngleOffset % 360;
+//            }
 
 
             if(doText) {
                 if (recalculateTextSize) {
-                    calculateWord(mText, c);
+                    Rect temp = new Rect(0, 0, mWidth, mHeight/4);
+                    mRay.addAll(calculateWord("Weather is sunny", c, temp));
+                    temp = new Rect(mWidth/2, mHeight/4, mWidth, mHeight/2);
+                    mRay.addAll(calculateWord("61°F", c, temp));
                     recalculateTextSize = false;
                 }
 
@@ -306,17 +312,8 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
                 synchronized (mSurfaceHolder) {
                     doArrive = doArrive ? false : true;
                     doGrid = !doArrive;
-//                    if(doGrid)
-//                        mAlphaPaint.setAlpha(1);
-//                    else
-//                        mAlphaPaint.setAlpha(255);
                 }
                 touched = false;
-//                for(Point p : mRay)
-//                {
-//                    p.xVel = map((float) Math.random(), 0, 1, -10, 10);
-//                    p.yVel = map((float) Math.random(), 0, 1, -10, 10);
-//                }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
                 touched = false;
@@ -395,9 +392,6 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
 
             xAcc += Math.cos(Math.toRadians(angle)) * 0.1;
             yAcc += Math.sin(Math.toRadians(angle)) * 0.1;
-
-
-
         }
 
         public void draw(Canvas c)
@@ -405,13 +399,26 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
             checkCollisions();
             if (doArrive) {
                 arrive();
+                setPaint(xCurPos, yCurPos);
             }
             else if(doGrid)
             {
                 gridForces();
+                setPaint(xVel, yVel);
+
             }
+
             update();
             c.drawCircle(xCurPos, yCurPos, 10, mPaint);
+        }
+
+        public void setPaint(float x, float y)
+        {
+            double angle = Math.atan2(y, x);
+            angle = Math.toDegrees(angle);
+            angle = (angle + 360) + paintAngleOffset;
+            angle = angle % 360;
+            mPaint.setColor(Color.HSVToColor(new float[]{(float) angle, 1, 1}));
         }
 
         public void arrive() {
