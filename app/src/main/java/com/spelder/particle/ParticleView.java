@@ -120,7 +120,6 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
 
         mAlphaPaint = new Paint();
         mAlphaPaint.setColor(Color.BLACK);
-        mAlphaPaint.setAlpha(1);
 
         createGrid();
     }
@@ -157,8 +156,8 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
             float[] coors = new float[2];
             pathMeasure.getPosTan(distanceTraveled, coors, null);
             Point poi = new Point(Math.round(coors[0]), Math.round(coors[1]));
-            float xPos = map((float) Math.random(), 0, 1, 50, mWidth -50);
-            float yPos = map((float) Math.random(), 0, 1, 50, mHeight -50);
+            float xPos = map((float) Math.random(), 0, 1, 50, mWidth - 50);
+            float yPos = map((float) Math.random(), 0, 1, 50, mHeight - 50);
             poi.setPosition(xPos, (yPos));
             cRay.add(poi);
 
@@ -173,6 +172,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
         }
         return cRay;
     }
+
     private static float calculateFontSize(Rect textBounds, Rect textContainer, String text, Paint textPaint) {
 
         // Further optimize this method by passing in a reference of the Paint object
@@ -195,33 +195,30 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
             else if (stage == 2 && fits) stage++;
         }
 
-        return Math.round(textSize*0.9);
+        return Math.round(textSize * 0.9);
     }
     //endregion
 
-    public void createGrid()
-    {
-        gridWidth = 10;
+    public void createGrid() {
+        gridWidth = 20;
         //do proportion to determine grid size
         //width/height = 10/x
-        gridHeight = Math.round(((float)mHeight) * 10 / mWidth);
-        cellWidth = mWidth/gridWidth;
-        cellHeight = mHeight/gridHeight;
+        gridHeight = Math.round(((float) mHeight) * 10 / mWidth);
+        cellWidth = mWidth / gridWidth;
+        cellHeight = mHeight / gridHeight;
         zPerlOff = 0;
         angles = new float[gridWidth][gridHeight];
     }
-    public void calculateGrid(Canvas c)
-    {
+
+    public void calculateGrid(Canvas c) {
 //        c.drawLine(0, 0, mWidth, 0, mPaint);
 //        c.drawLine(0, 0, 0, mHeight, mPaint);
-        for(int i = 0; i < gridWidth; i++)
-        {
-            for(int j = 0; j < gridHeight; j++)
-            {
+        for (int i = 0; i < gridWidth; i++) {
+            for (int j = 0; j < gridHeight; j++) {
 
-                double pVal = pGen.noise(i * 0.07 , j * 0.07, zPerlOff);
+                double pVal = pGen.noise(i * 0.24, j * 0.24, zPerlOff);
                 //Log.d("pVal",pVal + "");
-                angles[i][j] = map((float) pVal, -1, 1, 0, 360*3);
+                angles[i][j] = map((float) pVal, -1, 1, 0, 360 * 3);
 //                c.save();
 //                c.translate(cellWidth*(i+1), cellHeight*(j+1));
 //                c.drawLine(-cellWidth, 0, 0, 0, mPaint);
@@ -235,7 +232,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
 //                c.rotate(-270);
 //                c.drawLine(0, 0, 50, 0, mPaint);
 //                c.restore();
-                zPerlOff += 0.000025;
+                zPerlOff += 0.00005;
             }
         }
     }
@@ -246,18 +243,18 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
 
 //            if(doGrid)
 //            {
-                calculateGrid(c);
-                paintAngleOffset += .3;
-                paintAngleOffset = paintAngleOffset % 360;
+            calculateGrid(c);
+            paintAngleOffset += .3;
+            paintAngleOffset = paintAngleOffset % 360;
 //            }
 
 
-            if(doText) {
+            if (doText) {
                 if (recalculateTextSize) {
-                    Rect temp = new Rect(0, 0, mWidth, mHeight/4);
-                    mRay.addAll(calculateWord("Weather is sunny", c, temp));
-                    temp = new Rect(mWidth/2, mHeight/4, mWidth, mHeight/2);
-                    mRay.addAll(calculateWord("61°F", c, temp));
+                    Rect temp = new Rect(mWidth / 8, mHeight / 8, mWidth * 7 / 8, mHeight * 7 / 8);
+                    mRay.addAll(calculateWord("Seth", c, temp));
+//                    temp = new Rect(mWidth, mHeight/2, mWidth, mHeight);
+//                    mRay.addAll(calculateWord("Speaks", c, temp));
                     recalculateTextSize = false;
                 }
 
@@ -265,6 +262,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
                 for (Point point : mRay) {
                     point.draw(c);
                 }
+
             }
         }
     }
@@ -280,8 +278,6 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
         return ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2;
     }
     //endregion
-
-
 
 
     @Override
@@ -328,9 +324,9 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
         float xPos, yPos;
         float xVel, yVel;
         float xAcc, yAcc;
-        float maxFleeSpeed = -15;
+        float maxFleeSpeed = -5;
         float maxArriveSpeed = 5;
-        float maxFieldSpeed = 4;
+        float maxFieldSpeed = 5;
 
         public Point(float x, float y) {
             xPos = x;
@@ -368,7 +364,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
 
             xVel += xAcc;
             yVel += yAcc;
-            if(doGrid) {
+            if (doGrid) {
                 float[] lim = setMagnitude(xVel, yVel, maxFieldSpeed);
                 xVel = lim[0];
                 yVel = lim[1];
@@ -380,40 +376,39 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
 
         }
 
-        public void gridForces()
-        {
+        public void gridForces() {
             int xIndex = (int) (xCurPos / cellWidth);
             int yIndex = (int) (yCurPos / cellHeight);
-            if(xIndex >= angles.length)
+            if (xIndex >= angles.length)
                 xIndex = angles.length - 1;
-            if(yIndex >= angles[0].length)
+            if (yIndex >= angles[0].length)
                 yIndex = angles[0].length - 1;
             float angle = angles[xIndex][yIndex];
 
-            xAcc += Math.cos(Math.toRadians(angle)) * 0.1;
-            yAcc += Math.sin(Math.toRadians(angle)) * 0.1;
+            xAcc += Math.cos(Math.toRadians(angle)) * 1;
+            yAcc += Math.sin(Math.toRadians(angle)) * 1;
         }
 
-        public void draw(Canvas c)
-        {
+        public void draw(Canvas c) {
             checkCollisions();
-            if (doArrive) {
+            if (touched) {
+                flee(touched_x, touched_y);
+                setPaint(xVel, yVel);
+            } else if (doArrive) {
                 arrive();
                 setPaint(xCurPos, yCurPos);
-            }
-            else if(doGrid)
-            {
+            } else if (doGrid) {
                 gridForces();
                 setPaint(xVel, yVel);
 
             }
 
+
             update();
             c.drawCircle(xCurPos, yCurPos, 10, mPaint);
         }
 
-        public void setPaint(float x, float y)
-        {
+        public void setPaint(float x, float y) {
             double angle = Math.atan2(y, x);
             angle = Math.toDegrees(angle);
             angle = (angle + 360) + paintAngleOffset;
@@ -444,15 +439,18 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
             float dX = x - xCurPos;
             float dY = y - yCurPos;
             float distance = (float) Math.sqrt(dX * dX + dY * dY);
-            float speed = maxFleeSpeed;
-            speed = map(distance, 0, (float) Math.sqrt(mWidth * mWidth + mHeight * mHeight), maxFleeSpeed, 0);
-            float[] norm = setMagnitude(dX, dY, speed);
-            dX = norm[0];
-            dY = norm[1];
-            float sX = dX - xVel;
-            float sY = dY - yVel;
-            xAcc += sX;
-            yAcc += sY;
+//            Log.d("distance", distance + "");
+            if (distance < 200) {
+                float speed = maxFleeSpeed;
+                speed = map(distance, 0, (float) Math.sqrt(mWidth * mWidth + mHeight * mHeight), maxFleeSpeed, 0);
+                float[] norm = setMagnitude(dX, dY, speed);
+                dX = norm[0];
+                dY = norm[1];
+                float sX = dX - xVel;
+                float sY = dY - yVel;
+                xAcc += sX;
+                yAcc += sY;
+            }
 //          Log.d("xAcc", "" + xAcc);
 //          Log.d("yAcc", "" + yAcc);
         }
@@ -491,7 +489,7 @@ public class ParticleView extends SurfaceView implements SurfaceHolder.Callback 
                 c = null;
 
                 try {
-                    c = surfaceHolder.lockCanvas();
+                    c = surfaceHolder.lockHardwareCanvas();
                     synchronized (this.surfaceHolder) {
                         doDraw(c);
                     }
